@@ -6,6 +6,7 @@ import time
 import rospy
 import sys
 from std_msgs.msg import Float32
+from std_msgs.msg import String
 import struct
 
 class SerialComms:
@@ -33,39 +34,52 @@ class SerialComms:
             self.serial.close()
             sys.exit(0)
 
-        self.publisher = rospy.Publisher(self.angles_topic, Float32, queue_size=10)
+        self.publisher = rospy.Publisher(self.angles_topic, String, queue_size=10)
         #self.timer_angles = rospy.Timer(rospy.Duration(1.0/self.comm_freq), self.anglesPub) 
-        #self.serialWriter = rospy.Timer(rospy.Duration(2), self.sendToSTM)       # 1Hz
+        self.serialWriter = rospy.Timer(rospy.Duration(2), self.sendToSTM)       # Each 2 seconds
 
     # serial reading loop
     def serialHandle(self):
         while(not self.thread_stop.is_set()):
             if self.serial.inWaiting() > 0:
+                # Reads 12 bytes
                 data = self.serial.read(12)
                 self.data_ok = True
                 print('Angle 1: '+str(struct.unpack('f', data[0:4])[0])+' || Angle 2: '+str(struct.unpack('f', data[4:8])[0])+
                 ' || Angle 3: '+str(struct.unpack('f', data[8:12])[0]))
-                self.anglesPub(struct.unpack('f', data[0:4])[0])
-                #self.anglesPub(data)
+                angles_buffer = [str(struct.unpack('f', data[0:4])[0]), str(struct.unpack('f', data[4:8])[0]), str(struct.unpack('f', data[8:12])[0])]
+                self.anglesPub(angles_buffer)
+                # Clean input buffer
                 self.serial.reset_input_buffer()
-                
                 '''
                 rx_buffer = self.serial.readlines(self.serial.inWaiting())
                 print(rx_buffer)
                 self.serial.reset_input_buffer()
                 '''
     # Publish angles in ROS topic called 'angles'
-    def anglesPub(self, data):
+    def anglesPub(self, buffer):
         if self.data_ok:
             self.data_ok = False
-            self.publisher.publish(data)
-
+            self.publisher.publish("Angle 1: "+buffer[0]+" || Angle 2: "+buffer[1]+ "|| Angle 3: "+buffer[2])
+            '''
+            for angles in buffer:
+                self.publisher.publish(angles)
+            '''
     # Send info to STM32f407
     def sendToSTM(self, Event):
-        if self.serial.inWaiting > 0:
-            tx_buffer = [0xA1, 0x11, 0xB1]
-            self.serial.write(tx_buffer)
-            print("Write angle in serial port")
+        angle_1 = 45.5
+        angle_2 = 50.0
+        angle_3 = 55.0
+        angle_1_bytes = struct.pack('f', angle_1)
+        #tx_buffer = [0xA1, angle_1_bytes[0], angle_1_bytes[1], angle_1_bytes[2], angle_1_bytes[3], 0xB1]
+        angle_2_bytes = struct.pack('f', angle_2)
+        angle_3_bytes = struct.pack('f', angle_3)
+        tx_buffer = [0xA1, angle_1_bytes[0], angle_1_bytes[1], angle_1_bytes[2], angle_1_bytes[3], 
+            angle_2_bytes[0], angle_2_bytes[1], angle_2_bytes[2], angle_2_bytes[3],
+            angle_3_bytes[0], angle_3_bytes[1], angle_3_bytes[2], angle_3_bytes[3], 0xB1]
+
+        self.serial.write(tx_buffer)
+        print("Package sent")
         
     def stopThread(self):
         self.thread_stop.set()
@@ -75,7 +89,7 @@ if __name__ == "__main__":
     # ROS init node
     rospy.init_node('CommsScript', disable_signals = True)
 
-    # Create object 
+    # Create communication object 
     Comms = SerialComms()
 
     # Create a thread for communication with STM32 uC
