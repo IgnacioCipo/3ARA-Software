@@ -11,7 +11,7 @@ import struct
 
 class SerialComms:
     def __init__(self):
-        self.device_port = rospy.get_param('~port', '/dev/ttyS5')           # COM PORT - Default -> 5
+        self.device_port = rospy.get_param('~port', '/dev/ttyS0')           # COM PORT - Default -> 5
         self.baudrate = rospy.get_param('~baudrate', '57600')               # Baudrate 
         self.timeout = float( rospy.get_param('~timeout', '10'))            # 10 Hz 
         self.angles_topic = rospy.get_param('~angles_topic', 'angles')
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     Comms = SerialComms()
 
     # Create a thread for communication with STM32 uC
-    CommsThread = threading.Thread(target=Comms.serialHandle())
+    CommsThread = threading.Thread(target=Comms.readTicks())
     CommsThread.start()
 
     rospy.spin()
