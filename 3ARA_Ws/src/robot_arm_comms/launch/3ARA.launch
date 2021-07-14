@@ -1,0 +1,3 @@
+<launch>
+    <node name="robot_gui" pkg="robot_arm_comms" type="MainWindow.py" />
+</launch>

@@ -1,4 +1,7 @@
+#!/usr/bin/env python
+
 import sys 
+import os
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import uic
 import rospy
@@ -8,9 +11,10 @@ from sensor_msgs.msg import JointState
 class Window(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
+        ui_path = os.path.dirname(os.path.abspath(__file__))
         # Loads the window made in QtDesigner
-        uic.loadUi("MainWindow.ui", self)
-
+        #uic.loadUi("MainWindow.ui", self)
+        uic.loadUi(os.path.join(ui_path, "MainWindow.ui"), self)
         self.pub = rospy.Publisher('setpoint_angles', JointState, queue_size = 10)
         self.joints = JointState()
         self.joints.name = ['angle_1', 'angle_2', 'angle_3']
