@@ -1,3 +1,4 @@
 <launch>
     <node name="robot_gui" pkg="robot_arm_comms" type="MainWindow.py" />
+    <node name="ComsScript" pkg="robot_arm_comms" type="CommsScript.py" />
 </launch>
