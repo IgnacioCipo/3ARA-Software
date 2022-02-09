@@ -1,0 +1,8 @@
+prefix=/home/cipo/Documents/3ARA-Software/3ARA_Ws/install
+
+Name: robot_arm_comms
+Description: Description of robot_arm_comms
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

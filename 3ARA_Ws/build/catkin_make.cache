@@ -1,0 +1,2 @@
+robot_arm_comms
+-DCATKIN_DEVEL_PREFIX=/home/cipo/Documents/3ARA-Software/3ARA_Ws/devel -DCMAKE_INSTALL_PREFIX=/home/cipo/Documents/3ARA-Software/3ARA_Ws/install -G Unix Makefiles
